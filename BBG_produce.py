@@ -1,15 +1,15 @@
 import os
-import threading
+import multiprocessing
 
 print os.getcwd()
 os.chdir("/media/usb1/python-evdev/")
-os.system("python setup.py install")
+#os.system("python setup.py install")
 os.chdir("/media/usb1")
 
-def run():
+def run():    
     os.system("python BBG_produce_2.py")
     
-t = threading.Thread(target=run)
-t.start()
+p = multiprocessing.Process(target=run)
+p.start()
 print "exit"
 exit(0)

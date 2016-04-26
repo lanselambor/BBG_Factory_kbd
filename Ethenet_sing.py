@@ -71,7 +71,7 @@ def do_ethernet_dhcp():
     os.popen("ifconfig eth0 up")
     os.popen("dhclient eth0")
     result = 'ok'
-    for line in os.popen("ping -l 16 -c 3 192.168.1.1"):
+    for line in os.popen("ping -l 16 -c 3 192.168.31.1"):
         a = line.find('%')
         if a != -1:
             if line[a - 3:a] != ', 0':
