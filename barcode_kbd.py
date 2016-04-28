@@ -30,4 +30,4 @@ def readID():
                     return ID
 
 if __name__=="__main__":
-    print getID()
+    print readID()
