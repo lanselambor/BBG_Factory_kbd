@@ -1,8 +1,3 @@
-'''
-import Adafruit_BBIO.GPIO as GPIO
-import Adafruit_BBIO.ADC as ADC
-from Adafruit_I2C import Adafruit_I2C as I2C 
-'''
 import mraa
 import subprocess
 import sys, time, signal
@@ -189,16 +184,23 @@ class ITG3200():
 
 
 def check_uart():
-    g=GPS()
-    status = 'ok'
-    if g.read()[0][0] == '$GPGGA':
-        return status
-    else:
-        status =  'error'
-        return status
+    os.system("echo BB-UART2 > /sys/devices/platform/bone_capemgr/slots")
+    status = 'error'
+    ser = serial.Serial(port = "/dev/ttyO2", baudrate=9600)
+    ser.flush()
+    ser.write("AT\r\n")
+    
+    timecnt = 5
+    while 0 != timecnt:
+        timecnt = timecnt - 1
+        string = ser.read()
+        if string != None:
+            print string
+            break
+    return string      
 
 def check_i2c():
-    status = 'ok'
+    status = 'error'
     gyro = ITG3200()
     try:
         gyro.init()
@@ -209,8 +211,8 @@ def check_i2c():
     time.sleep(2)
     cnt = 0
     while cnt < 5:
-        if gyro.getTemperature() < 0:
-            status = 'error'
+        if gyro.getTemperature() > 0:
+            status = 'ok'
             break
         cnt = cnt + 1
         time.sleep(0.5)
@@ -254,7 +256,7 @@ def check_voltage():
                 ["AIN4", 1.14, 1.26, ain4],
                 ["AIN6", 1.42, 1.58, ain6],
                 ["AIN1", 1.04, 1.16, ain1], # VDD_3V3B / 3
-                ["AIN3", 0.90, 1.00, ain3], # VDD_5V   / 3 #["AIN3", 1.50, 1.70, ain3], # VDD_5V   / 3
+                ["AIN3", 1.50, 1.75, ain3], # VDD_5V   / 3
                 ["AIN5", 1.50, 1.70, ain5]] # SYS_5V   / 3
                 
     # ADC.setup()
