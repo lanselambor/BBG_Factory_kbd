@@ -184,20 +184,18 @@ class ITG3200():
 
 
 def check_uart():
+    status = 'error'
     os.system("echo BB-UART2 > /sys/devices/platform/bone_capemgr/slots")
     status = 'error'
     ser = serial.Serial(port = "/dev/ttyO2", baudrate=9600)
-    ser.flush()
-    ser.write("AT\r\n")
-    
-    timecnt = 5
-    while 0 != timecnt:
-        timecnt = timecnt - 1
-        string = ser.read()
-        if string != None:
-            print string
-            break
-    return string      
+    ser.timeout = 2
+    ser.write("AT")
+    ret = ser.read(2)    
+    print "ret = ", ret
+    if "OK" == ret:
+        status = "ok"
+
+    return status
 
 def check_i2c():
     status = 'error'
@@ -435,4 +433,4 @@ if __name__ == '__main__':
     #print check_voltage()    
     #print check_i2c()
     #print check_io()    
-    check_uart()
+    print check_uart()
