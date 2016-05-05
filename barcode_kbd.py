@@ -24,10 +24,11 @@ def readID():
             if data.keystate == 1:  # Down events only
                 key_lookup = scancodes.get(data.scancode) or u'UNKNOWN:{}'.format(data.scancode)  # Lookup or return UNKNOWN:XX
                 if key_lookup != 'CRLF':
-                    ID = ID + key_lookup
-                else:
-                    ID = ID[5:]
-                    return ID
-
+                    if key_lookup != 'LSHFT' and key_lookup != 'UNKNOWN:57':
+                        ID = ID + key_lookup
+                else:              
+                    return ID[4:16].encode("utf-8"), ID[20:].encode("utf-8")
+                    
 if __name__=="__main__":
     print readID()
+    

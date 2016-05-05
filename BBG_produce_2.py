@@ -17,8 +17,8 @@ import barcode_kbd
 import multiprocessing
 
 OK_PIN = 88  # "P9_42"
-NG_PIN = 87  # "P9_41"
-TEST_PIN = 77  # "P9_31"
+NG_PIN = 64  # "P9_18"
+TEST_PIN = 60  # "P9_14"
 
 ng_pin = mraa.Gpio(NG_PIN)
 ok_pin = mraa.Gpio(OK_PIN)
@@ -37,16 +37,7 @@ def lock():
         while True:
             pass
 
-'''
-def checkDebugUart():
-    uart = serial.Serial(port = "/dev/ttyUSB0", baudrate=9600)
-    uart.flush()
-'''
-        
-
-def runError(pid):
-    _pid = str(pid)
-    os.system("kill -9 " + _pid)
+def report_error():   
     t_error = ledstatus(7)
     t_error.led_clear = 1
     cnt = 0
@@ -59,11 +50,6 @@ def runError(pid):
         ng_pin.write(1)        # GPIO.output(NG_PIN,GPIO.HIGH)
         time.sleep(0.5)
 
-def report_error():    
-    pid = os.getpid()
-    p = multiprocessing.Process(target = runError, args = (pid,))
-    p.start()
-
 if __name__ == '__main__': 
     try:
         test_pin.write(1)    #GPIO.output(TEST_PIN,GPIO.HIGH)    
@@ -72,16 +58,16 @@ if __name__ == '__main__':
         ok_pin.write(0)        # GPIO.output(OK_PIN,GPIO.LOW)
         ng_pin.write(0)        # GPIO.output(NG_PIN,GPIO.LOW)    
 
-        #id = 'BBG115051111'   
+        #id = 'BBGW16050000'
+        #mac_addr = '2CF7F1060001'
+        
         print  "start readID"
-        id = barcode_kbd.readID().encode("utf-8")        
+        id, mac_addr = barcode_kbd.readID() 
         report_file = id
         okfile = id
         #report_file = 'BBG115051111'
         print  report_file
         
-        #report = open(report_file,'w+')
-        #report.write("-------------- Barcoder test ----------- \n")
         if report_file != 'blank':
             usbfile = open("/proc/mounts",'r')
             while True:
@@ -89,6 +75,7 @@ if __name__ == '__main__':
                 a = line.find("media")
                 if a != -1 :
                     report_file = line.split()[1]+"/report/"+report_file+'_fail'+".txt"
+                    print "report_file: ", report_file
                     okfile = line.split()[1]+"/report/"+okfile+'_pass'+".txt"
                     break
                     
@@ -109,22 +96,30 @@ if __name__ == '__main__':
         '''eeprom test'''
         report.write("-------------------------------eeprom test------------------------------\n")
         Myeeprom = eeprom()
-        name,version,serial = Myeeprom.readBoardinfo()
-
-        version = 'BBG1'
-        serial = id
-        print type(serial)
-        Myeeprom.writeBoardinfo(name,version,serial)
-        name,version,serial = Myeeprom.readBoardinfo()
-        if serial == id:
+        
+        name, version, serial, _mac_addr = Myeeprom.readBoardinfo()
+        print name,version,serial,mac_addr        
+        
+        version = 'GW1A'
+        serial = id        
+                
+        Myeeprom.writeBoardinfo(name,version,serial,mac_addr)
+        name,version,serial,_mac_addr = Myeeprom.readBoardinfo()
+        
+        # Actually because of the struct style, mac_addr has 18 bytes
+        _mac_addr = _mac_addr[:12]
+       
+        if serial == id and mac_addr == str(_mac_addr):
             report.write('write board serial: ' + serial + '------>[pass]\n\n')
+            report.write('write board mac_addr: ' + '%s'%_mac_addr + '------>[pass]\n\n')
             report.write('write board version: ' + '%s'%version + '------>[pass]\n\n')
         else:
             report.write('write board serial: ' + serial + '------>[fail]\n\n')
+            report.write('write board mac_addr: ' + '%s'%_mac_addr + '------>[fail]\n\n')
             report.write('write board version: ' + '%s'%version + '------>[fail]\n\n')
             report.close()
             report_error()
-            
+        
         '''DDR test'''
         report.write("--------------------------------DDR test------------------------------\n")
         ddr_file = FM('DDR')
@@ -263,9 +258,10 @@ if __name__ == '__main__':
                 break
 
         report.close()
-        '''    
+           
         # Remove factory files
-        os.system("rm /etc/need_test")
+        '''
+        os.system("rm /etc/need_test")        
         os.system("rm /opt/scripts/boot/factory_check.sh")                  
         os.system("rm /lib/systemd/system/factory-check.service")
         
@@ -290,7 +286,7 @@ if __name__ == '__main__':
         os.system("sync")
 
         ok_pin.write(0)    #GPIO.output(OK_PIN,GPIO.LOW)
-    except Exception as e:        
+    except Exception as e:
         report.write("\r\n------------------------------- Other error -------------------------------\n")        
         error = ''
         for e in e.args:

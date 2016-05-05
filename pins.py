@@ -186,12 +186,14 @@ class ITG3200():
 def check_uart():
     status = 'error'
     os.system("echo BB-UART2 > /sys/devices/platform/bone_capemgr/slots")
+    os.system("sync")
+    os.system("sync")
+    os.system("sync")    
     status = 'error'
     ser = serial.Serial(port = "/dev/ttyO2", baudrate=9600)
     ser.timeout = 2
     ser.write("AT")
     ret = ser.read(2)    
-    print "ret = ", ret
     if "OK" == ret:
         status = "ok"
 
@@ -251,7 +253,7 @@ def check_voltage():
     
     VOLTAGES = [["AIN0", 1.50, 1.75, ain0],
                 ["AIN2", 0.85, 0.95, ain2],
-                ["AIN4", 1.14, 1.26, ain4],
+                ["AIN4", 1.10, 1.30, ain4],
                 ["AIN6", 1.42, 1.58, ain6],
                 ["AIN1", 1.04, 1.16, ain1], # VDD_3V3B / 3
                 ["AIN3", 1.50, 1.75, ain3], # VDD_5V   / 3
@@ -274,11 +276,7 @@ def check_io():
     #Group1
     P8_7 = mraa.Gpio(7)
     P8_9 = mraa.Gpio(9)
-    P8_12 = mraa.Gpio(12)
     P8_13 = mraa.Gpio(13)
-    P8_15 = mraa.Gpio(15)
-    P8_18 = mraa.Gpio(18)
-    P8_26 = mraa.Gpio(26)
     P8_27 = mraa.Gpio(27)
     P8_29 = mraa.Gpio(29)
     P8_35 = mraa.Gpio(35)
@@ -287,20 +285,13 @@ def check_io():
     P8_40 = mraa.Gpio(40)
     P8_45 = mraa.Gpio(45)
     P9_13 = mraa.Gpio(46+13)
-    P9_16 = mraa.Gpio(46+16)
-    P9_18 = mraa.Gpio(46+18)
     P9_23 = mraa.Gpio(46+23)
     P9_26 = mraa.Gpio(46+26)
     P9_27 = mraa.Gpio(46+27)
-    P9_30 = mraa.Gpio(46+30)
     
     #Group2
     P8_8 = mraa.Gpio(8)
     P8_10 = mraa.Gpio(10)
-    P8_11 = mraa.Gpio(11)
-    P8_14 = mraa.Gpio(14)
-    P8_16 = mraa.Gpio(16)
-    P8_17 = mraa.Gpio(17)
     P8_19 = mraa.Gpio(19)
     P8_28 = mraa.Gpio(28)
     P8_30 = mraa.Gpio(30)
@@ -311,14 +302,9 @@ def check_io():
     P8_39 = mraa.Gpio(39)
     P8_46 = mraa.Gpio(46)
     P9_11 = mraa.Gpio(46+11)
-    P9_12 = mraa.Gpio(46+12)
-    P9_14 = mraa.Gpio(46+14)
     P9_15 = mraa.Gpio(46+15)
     P9_17 = mraa.Gpio(46+17)
     P9_24 = mraa.Gpio(46+24)
-    P9_28 = mraa.Gpio(46+28)
-    P9_29 = mraa.Gpio(46+29)
-    P9_41 = mraa.Gpio(46+41)
     P9_42 = mraa.Gpio(46+42)
     
     #Group3
@@ -330,25 +316,26 @@ def check_io():
     P8_41 = mraa.Gpio(41) 
     P8_44 = mraa.Gpio(44)
     
-    IO_GROUP1 = [P8_7,P8_9,P8_12,P8_13,P8_15,P8_18,P8_26,P8_27,P8_29,
-                 P8_35,P8_36,P8_37,P8_40,P8_45,P9_13,P9_16,P9_18,
-                 P9_23,P9_26,P9_27,P9_30]
+    IO_GROUP1 = [P8_7,P8_9,P8_13,P8_27,P8_29,
+                 P8_35,P8_36,P8_37,P8_40,P8_45,P9_13,
+                 P9_23,P9_26,P9_27]
                  
-    IO_GROUP2 = [P8_8,P8_10,P8_11,P8_14,P8_16,P8_17,P8_19,P8_28,P8_30,
-                 P8_32,P8_33,P8_34,P8_38,P8_39,P8_46,P9_11,P9_12,
-                 P9_14,P9_15,P9_17,P9_24,P9_28,P9_29,P9_41,P9_42]
+    IO_GROUP2 = [P8_8,P8_10,P8_19,P8_28,P8_30,
+                 P8_32,P8_33,P8_34,P8_38,P8_39,P8_46,P9_11,
+                 P9_15,P9_17,P9_42]
                  
     IO_GROUP3 = [P8_31,P8_42,P8_43]
     
     IO_GROUP4 = [P8_41,P8_44]
     
-    io_group1 = ['P8_7','P8_9','P8_12','P8_13','P8_15','P8_18','P8_26','P8_27','P8_29',
-                 'P8_35','P8_36','P8_37','P8_40','P8_45','P9_13','P9_16','P9_18',
-                 'P9_23','P9_26','P9_27','P9_30']
+    io_group1 = ['P8_7','P8_9','P8_13','P8_27','P8_29',
+                 'P8_35','P8_36','P8_37','P8_40','P8_45','P9_13',
+                 'P9_23','P9_26','P9_27']
 
-    io_group2 = ['P8_8','P8_10','P8_11','P8_14','P8_16','P8_17','P8_19','P8_28','P8_30',
-                 'P8_32','P8_33','P8_34','P8_38','P8_39','P8_46','P9_11','P9_12',
-                 'P9_14','P9_15','P9_17','P9_24','P9_28','P9_29','P9_41','P9_42']
+    io_group2 = ['P8_8','P8_10','P8_19','P8_28','P8_30',
+                 'P8_32','P8_33','P8_34','P8_38','P8_39','P8_46',
+                 'P9_11','P9_15','P9_17','P9_42']
+
     io_group3 = ['P8_31','P8_42','P8_43']
     io_group4 = ['P8_41','P8_44']
     
@@ -429,8 +416,8 @@ def check_power():
     return isok,result
     
 if __name__ == '__main__':
-    #print check_power()
-    #print check_voltage()    
-    #print check_i2c()
-    #print check_io()    
-    print check_uart()
+    print "check_power: ", check_power()
+    print "check_voltage: ", check_voltage()    
+    print "check_i2c: ", check_i2c()
+    print "check_io: ", check_io()    
+    print "check_uart: ", check_uart()
